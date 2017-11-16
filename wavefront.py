@@ -42,7 +42,8 @@ class map_object(point):
         self.start = None
         self.goal = None
         self.path = None
-        self.eight_connected = True
+        self.eight_connected = False
+        print("8-Connected: ", self.eight_connected)
     
     def free_map_2D(self):
         del self.map_2D[:]
@@ -63,8 +64,8 @@ class map_object(point):
     def create_map(self):
 
         # Read in map from map.csv file
-        print("Reading from map file \"map.csv\"")
-        with open("map.csv") as file:
+        print("Reading from map file \"excel_map.csv\"")
+        with open("excel_map.csv") as file:
             reader = csv.reader(file, delimiter=',')
             for row in reader:
                 int_row = [ int(value) for value in row]
@@ -101,6 +102,10 @@ class map_object(point):
                     for dx in range(-1, 2):
                         for dy in range(-1, 2):
 
+                            # Avoid putting self into adjacency list
+                            if dx == 0 and dy == 0:
+                                pass
+
                             # Check if the point is a valid location
                             node_addr = point(x + dx, y + dy)
                             if self.in_graph(node_addr):
@@ -108,7 +113,24 @@ class map_object(point):
                                     self.graph[y][x].adjacency_list.append(self.graph[node_addr.y][node_addr.x])
 
                 else:
-                    pass # Will have to impliment 4-connected graph
+                    # X direction
+                    for dx in range(-1, 2):
+                        if dx == 0:
+                            pass
+                        else:
+                            node_addr = point(x + dx, y)
+                            if self.in_graph(node_addr):
+                                if self.graph[node_addr.y][node_addr.x] != CONST_OBSTACLE:
+                                    self.graph[y][x].adjacency_list.append(self.graph[node_addr.y][node_addr.x])
+                    # Y direction                
+                    for dy in range(-1, 2):
+                        if dy == 0:
+                            pass
+                        else:
+                            node_addr = point(x, y + dy)
+                            if self.in_graph(node_addr):
+                                if self.graph[node_addr.y][node_addr.x] != CONST_OBSTACLE:
+                                    self.graph[y][x].adjacency_list.append(self.graph[node_addr.y][node_addr.x])
 
     def calculate_path(self):
 

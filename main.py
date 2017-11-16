@@ -1,14 +1,12 @@
 import sys
 import wavefront
 import cozmoDirection
+import cozmo
 
-def main():
+def main(robot: cozmo.robot.Robot):
     map = wavefront.map_object()
     map.create_map()
     path = map.calculate_path()
-
-    for location in path:
-        print("Path step: ", location.printable())
 
     # Initialize movement object
     motion = cozmoDirection.cozmo_motion()
@@ -24,9 +22,17 @@ def main():
     # Move to next point
     while len(path) > 0:
         next_point = path.pop()
-        motion.pointDirection(next_point, current_point)
+
+        # Print to indicate direction of motion
+        print("Moving from point: {} to point: {}".format(current_point.printable(), next_point.printable()))
+
+        motion.pointDirection(robot, next_point, current_point)
         current_point = next_point
 
+    # Reached goal
+    #motion.goal_reached(robot)
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
+
+cozmo.run_program(main)

@@ -1,5 +1,4 @@
 import cozmo
-
 from cozmo.util import degrees, distance_inches, speed_mmps
 from enum import Enum
 
@@ -21,23 +20,13 @@ class nav(nav_direction):
     West = nav_direction(6, "West")
     NorthWest = nav_direction(7, "NorthWest")
 
-# We assume Cozmo is initialized to face North
-#class direction(Enum):
-#    North = 0
-#    NorthEast = 1
-#    East = 2
-#    SouthEast = 3
-#    South = 4
-#    SouthWest = 5
-#    West = 6
-#    NorthWest = 7
-
 class cozmo_motion:
 
     def __init__(self):
         self.orientation = nav.North
+        #self.robot = cozmo.robot.Robot
 
-    def pointDirection(self, next_point, current_point):
+    def pointDirection(self, robot, next_point, current_point):
 
         # Get deltas
         dx = next_point.x - current_point.x
@@ -63,9 +52,10 @@ class cozmo_motion:
 
         # Find rotational angle
         print("    Direction: ", new_orientation.name)
-        self.get_rotation_angle(new_orientation)
+        self.get_rotation_angle(robot, new_orientation)
 
-    def get_rotation_angle(self, target_orientation):
+
+    def get_rotation_angle(self, robot, target_orientation):
         
         # Calculate degrees to rotate
         degrees = (target_orientation.value - self.orientation.value ) * DEGREES_PER_DIRECTION
@@ -76,17 +66,21 @@ class cozmo_motion:
         if degrees < -180:
             degrees += 360
 
+        degrees = degrees * -1
         print ("    Rotating {} degrees".format(degrees))
 
         # Set new orientation
-        #self.cozmo_program(cozmo.robot.Robot, self.DEGREE)
+        self.cozmo_program(robot, degrees)
         self.orientation = target_orientation
 
-    def cozmo_program(robot: cozmo.robot.Robot, degree):
+
+    # Cozmo functions
+    def cozmo_program(self, robot, degree):
         if degree != 0 :
-            robot.turn_in_place(degree).wait_for_completed()
+            print("Degree:", degree)
+            robot.turn_in_place(degrees(degree)).wait_for_completed()
         robot.drive_straight(distance_inches(4), speed_mmps(50)).wait_for_completed()
 
-    def goal_reached(robot: cozmo.robot.Robot):
+    def goal_reached(self, robot):
         robot.say_text("Goal Reached").wait_for_completed()
         robot.say_text("I am the Best").wait_for_completed()
