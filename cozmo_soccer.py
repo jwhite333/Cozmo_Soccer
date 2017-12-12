@@ -29,6 +29,8 @@ class CozmoSoccer:
         # BGR range for orange
         color_lower = (0, 100, 230)
         color_upper = (130, 170, 255)
+        #color_lower = (67, 66, 186)
+        #color_upper = (80, 124, 249)
 
         # Localize the object and remove imperfections
         mask = cv2.inRange(current_frame, color_lower, color_upper)
