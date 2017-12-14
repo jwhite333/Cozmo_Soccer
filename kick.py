@@ -4,14 +4,13 @@ from cozmo.exceptions import RobotBusy
 from time import sleep
 import robot_vision as vision
 
-turn_right = -5
-turn_left = 5
+angle_left = 5
+angle_right = -5
 
-kick_phase_1 = 15
-kick_phase_2 = 18
+kick_cycles = 10
 
-wheel_speed = 400
-turn_speed = 400
+wheel_speed = 1000
+wheel_accl = 1000
 
 class kicker():
 
@@ -19,7 +18,7 @@ class kicker():
         self.parent = parent
         self.kicking = False
         self.kick_time = 0
-        print("Initializing kicker")
+        print("Kicker Ready")
 
     # Handle new images
     def on_new_image(self, event, *, image:cozmo.world.CameraImage, **kw):
@@ -32,24 +31,33 @@ class kicker():
         # Nicks code
         ball = vision.detect_object(image)
 
+        # Check that the right behavior is enabled
         if self.parent.behavior < 3:
-            
-            if ball is not None:
 
-                ball_x_val = ball[0]
+            #try:
+            #    self.parent.robot.set_lift_height(1, 10, 10, 2)
+            #except RobotBusy:
+            #    pass
+            if self.kicking:
+                self.kick()
 
+            elif ball is not None:
+
+                x_position = ball[0]
+
+                # Line up with the ball if we aren't kicking yet
                 if not self.kicking:
-                    if ball_x_val <= vision.left_of_screen_wide:
+                    if x_position <= vision.left_of_screen_small:
                         try:
-                            print("Driving left, X: {}".format(ball_x_val))
-                            self.parent.robot.turn_in_place(degrees(turn_left))
+                            print("Driving left, X: {}".format(x_position))
+                            self.parent.robot.turn_in_place(degrees(angle_left))
                         except RobotBusy:
                             pass
                     # If ball is in the middle of image
-                    elif ball_x_val >= vision.right_of_screen_wide:
+                    elif x_position >= vision.right_of_screen_small:
                         try:
-                            print("Driving right, X: {}".format(ball_x_val))
-                            self.parent.robot.turn_in_place(degrees(turn_right))
+                            print("Driving right, X: {}".format(x_position))
+                            self.parent.robot.turn_in_place(degrees(angle_right))
                         except RobotBusy:
                             pass
                 
@@ -57,36 +65,25 @@ class kicker():
                         self.kick()
                 else:
                     self.kick()
-                
+
+    # Execute the kick
     def kick(self):
 
         self.kicking = True
 
-        if self.kick_time < kick_phase_1:
+        if self.kick_time < kick_cycles:
             print("Kicking")
 
             # Drive at ball
             self.parent.robot.drive_wheel_motors(
                             wheel_speed,
-                            wheel_speed)
-
-            self.kick_time += 1
-
-        elif self.kick_time < kick_phase_2:
-            print("Kicking and turning")
-
-            # Drive at ball
-            self.parent.robot.drive_wheel_motors(
-                                wheel_speed,
-                                wheel_speed - turn_speed)
-
-            self.kick_time += 1
+                            wheel_speed,
+                            wheel_accl,
+                            wheel_accl)
 
         else:
             print("Stopping")
             self.parent.robot.stop_all_motors()
-            
 
-            
-
-            
+        # INcriment kick time
+        self.kick_time += 1

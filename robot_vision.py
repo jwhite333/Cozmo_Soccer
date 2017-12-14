@@ -4,6 +4,7 @@ import cozmo
 from cozmo.util import degrees, distance_mm, speed_mmps
 
 min_object_radius = 10
+screen_mid = 150
 
 # Narrow range for goalie
 left_of_screen_small = 115
@@ -74,9 +75,12 @@ def detect_object(image):
     current_frame = cv2.cvtColor(numpy.array(raw_image), cv2.COLOR_RGB2BGR)
 
     # BGR range for orange
-    #color_lower = (0, 62, 204)
-    color_lower = (0, 75, 225)
+    color_lower = (0, 70, 225)
     color_upper = (130, 170, 255)
+
+    # Works on 5th floor ISEC
+    #color_lower = (0, 75, 225)
+    #color_upper = (130, 170, 255)
 
     # Localize the object and remove imperfections
     mask = cv2.inRange(current_frame, color_lower, color_upper)
